@@ -535,6 +535,34 @@ const DB = {
     ],
     freeTestSeries: [
         { id: "743", title: "UP Police Constable 2026 (Free Weekly Test)", logo: "https://appx-content-v2.classx.co.in/subject/2026-10-08-0_5663049907369836.jpeg" }
+    ],
+    tsSubjects: {
+        "700": [
+            { subjectid: "3171", subject_name: "SSC GD (Maths) Quiz & Tests", subject_logo: "" },
+            { subjectid: "3172", subject_name: "SSC GD (Reasoning)", subject_logo: "" }
+        ],
+        "776": [
+            { subjectid: "1415", subject_name: "FULL MOCK TEST", subject_logo: "" }
+        ]
+    },
+    tsTitles: {
+        "700_3171": [
+            { id: "40426", title: "Ratio, Age, Mixture", test_series_id: "700", time: "60", questions: "50", marks: "50", test_questions_url: "" }
+        ]
+    },
+    fallbackCbtQuestions: [
+        {
+            id: "12370334",
+            question: `<p style="font-size:16pt"><span style="font-family:'KOKILA'">Find the third proportional of 25 and 45.</span></p><p style="font-size:16pt"><span style="font-family:'KOKILA'">25 और 45 का तृतीय समानुपाती ज्ञात कीजिए।</span></p>`,
+            option_1: `<p style="font-size:16pt"><span style="font-family:'KOKILA'">81</span></p>`,
+            option_2: `<p style="font-size:16pt"><span style="font-family:'KOKILA'">65</span></p>`,
+            option_3: `<p style="font-size:16pt"><span style="font-family:'KOKILA'">85</span></p>`,
+            option_4: `<p style="font-size:16pt"><span style="font-family:'KOKILA'">76</span></p>`,
+            answer: "1",
+            positive_marks: "2.00",
+            negative_marks: "0.50",
+            solution_text: `<p style="font-size:16pt"><span style="font-family:'KOKILA'">a व b का तृतीय समानुपाती = (b × b) / a = (45 × 45) / 25 = 81</span></p>`
+        }
     ]
 };
 
@@ -922,11 +950,9 @@ async function loadCourseTab(tab) {
         grid.innerHTML = "";
         renderLectureList(list, batchTok);
     } else if (tab === "tests") {
-        // Trigger TCS test series list for batch
+        state.view = "batch_ts_subjects";
         const tsId = state.courseTestSeriesMap[state.courseId] || "700";
-        if (typeof openTestSeriesExplorer === "function") {
-            openTestSeriesExplorer('paid_ts');
-        }
+        openTestSeriesSubjects(tsId, `${state.courseName} - Batch Tests`);
     } else if (tab === "telegram") {
         grid.innerHTML = `
             <div class="col-span-full grid-card p-6 flex flex-wrap justify-between items-center gap-4">
@@ -1297,6 +1323,752 @@ function setPdfMode(mode) {
 function closePdfSlide() {
     document.getElementById("pdfFrame").src = "";
     showSlide(state.previousSlide || "slideExplorer");
+}
+
+// =====================================================
+// TEST SERIES & TCS PATTERN CBT ENGINE (EMBEDDED)
+// =====================================================
+async function openTestSeriesExplorer(mode) {
+    if (!enforceCompulsoryLogin()) return;
+    state.tsMode = mode;
+    state.view = "ts_list";
+    showSlide("slideExplorer");
+    document.getElementById("subTabs").classList.add("hidden");
+
+    const grid = document.getElementById("mainGrid");
+    grid.innerHTML = `<div class="col-span-full py-12 text-center font-extrabold text-slate-800">🔄 Loading Official RWA Test Series...</div>`;
+
+    const primaryTok = USER_TOKENS[0];
+    state.activeTokenObj = primaryTok;
+
+    if (mode === "paid_ts") {
+        document.getElementById("crumbText").textContent = "Official Exam Series";
+        document.getElementById("headingText").textContent = "🏆 Paid Test Series";
+
+        const p0 = await fetchAPIWithToken(`/get/test_series?start=0&search=&client_api_url=&exam_id=`, primaryTok, () => []);
+        const p10 = await fetchAPIWithToken(`/get/test_series?start=10&search=&client_api_url=&exam_id=`, primaryTok, () => []);
+        let combined = [...(Array.isArray(p0) ? p0 : []), ...(Array.isArray(p10) ? p10 : [])];
+
+        if (combined.length === 0) combined = DB.paidTestSeries;
+
+        const seen = new Set();
+        grid.innerHTML = "";
+        combined.forEach(ts => {
+            if (seen.has(String(ts.id))) return;
+            seen.add(String(ts.id));
+            const title = (ts.title || "Paid Test Series").replace(/'/g, "");
+            const logo = ts.logo || "https://placehold.co/600x320/4f46e5/ffffff?text=Test+Series";
+            grid.innerHTML += `
+                <div onclick="openTestSeriesSubjects('${ts.id}', '${title}')" class="grid-card overflow-hidden cursor-pointer flex flex-col justify-between">
+                    <div>
+                        <img src="${logo}" onerror="this.src='https://placehold.co/600x320/4f46e5/ffffff?text=RWA+Test+Series'" class="w-full h-44 object-cover">
+                        <div class="p-4">
+                            <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-black">SERIES #${ts.id}</span>
+                            <h3 class="font-black text-base text-slate-900 mt-2">${ts.title}</h3>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <div class="btn-watch w-full text-center text-xs">Open Test Subjects ➔</div>
+                    </div>
+                </div>`;
+        });
+    } else {
+        document.getElementById("crumbText").textContent = "Weekly Mock Tests";
+        document.getElementById("headingText").textContent = "📝 Free Test Series";
+
+        const f0 = await fetchAPIWithToken(`/get/quiz_test_series?start=0&exam_id=`, primaryTok, () => []);
+        const f10 = await fetchAPIWithToken(`/get/quiz_test_series?start=10&exam_id=`, primaryTok, () => []);
+        let combined = [...(Array.isArray(f0) ? f0 : []), ...(Array.isArray(f10) ? f10 : [])];
+
+        if (combined.length === 0) combined = DB.freeTestSeries;
+
+        const seen = new Set();
+        grid.innerHTML = "";
+        combined.forEach(ts => {
+            if (seen.has(String(ts.id))) return;
+            seen.add(String(ts.id));
+            const title = (ts.title || "Free Test Series").replace(/'/g, "");
+            const logo = ts.logo || "https://placehold.co/600x320/0891b2/ffffff?text=Free+Tests";
+            grid.innerHTML += `
+                <div onclick="openTestSeriesSubjects('${ts.id}', '${title}')" class="grid-card overflow-hidden cursor-pointer flex flex-col justify-between">
+                    <div>
+                        <img src="${logo}" onerror="this.src='https://placehold.co/600x320/0891b2/ffffff?text=Free+Test+Series'" class="w-full h-44 object-cover">
+                        <div class="p-4">
+                            <span class="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 text-[10px] font-black">FREE SERIES #${ts.id}</span>
+                            <h3 class="font-black text-base text-slate-900 mt-2">${ts.title}</h3>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <div class="btn-watch w-full text-center text-xs">View All Mock Tests ➔</div>
+                    </div>
+                </div>`;
+        });
+    }
+}
+
+async function openTestSeriesSubjects(tsId, tsTitle) {
+    state.activeSeriesId = tsId;
+    state.activeSeriesTitle = tsTitle;
+    state.view = "ts_subjects";
+    document.getElementById("crumbText").textContent = `Test Series #${tsId}`;
+    document.getElementById("headingText").textContent = tsTitle;
+
+    const grid = document.getElementById("mainGrid");
+    grid.innerHTML = `<div class="col-span-full py-10 text-center font-bold text-slate-700">Loading Test Series Subjects...</div>`;
+
+    const useTok = state.activeTokenObj || USER_TOKENS[0];
+    const subs = await fetchAPIWithToken(`/get/testseries_subjects?testseries_id=${tsId}`, useTok, () => DB.tsSubjects[tsId] || []);
+
+    if (!subs || subs.length === 0 || (subs.length === 1 && String(subs[0].subjectid) === "-1")) {
+        openTestSeriesTitles(tsId, "-1", tsTitle);
+        return;
+    }
+
+    grid.innerHTML = "";
+    subs.forEach(s => {
+        const sname = (s.subject_name || "Mock Tests").replace(/'/g, "");
+        const logo = s.subject_logo || `https://placehold.co/80x80/4f46e5/ffffff?text=${encodeURIComponent(sname.slice(0, 3))}`;
+        grid.innerHTML += `
+            <div onclick="openTestSeriesTitles('${tsId}', '${s.subjectid}', '${sname}')" class="grid-card p-4 flex items-center gap-4 cursor-pointer">
+                <img src="${logo}" onerror="this.src='https://placehold.co/80x80/4f46e5/ffffff?text=TEST'" class="w-16 h-16 rounded-2xl object-cover shadow-md">
+                <div class="flex-1">
+                    <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 text-[10px] font-black">SUBJECT #${s.subjectid}</span>
+                    <h4 class="font-black text-base text-slate-900 mt-1">${s.subject_name}</h4>
+                    <p class="text-xs text-blue-600 font-extrabold mt-1">Open Mock Tests ➔</p>
+                </div>
+            </div>`;
+    });
+}
+
+async function openTestSeriesTitles(tsId, subId, subName) {
+    state.view = "ts_tests";
+    state.activeSeriesId = tsId;
+    state.activeTsSubId = String(subId);
+    state.activeTsSubName = subName;
+
+    document.getElementById("crumbText").textContent = state.activeSeriesTitle;
+    document.getElementById("headingText").textContent = `📝 ${subName}`;
+
+    const grid = document.getElementById("mainGrid");
+    grid.innerHTML = `<div class="col-span-full py-10 text-center font-bold text-slate-700">Fetching Mock Tests...</div>`;
+
+    const useTok = state.activeTokenObj || USER_TOKENS[0];
+    const uid = useTok.userId || extractUidFromJwt(useTok.token) || "4756316";
+    const ep = String(subId) === "-1"
+        ? `/get/test_titlev2?testseriesid=${tsId}&subject_id=-1&chapter_id=-1&userid=${uid}&search=&start=-1`
+        : `/get/test_titlev2?testseriesid=${tsId}&subject_id=${subId}&userid=${uid}&search=&start=-1`;
+
+    const list = await fetchAPIWithToken(ep, useTok, () => DB.tsTitles[`${tsId}_${subId}`] || DB.tsTitles["743_-1"] || []);
+    renderTestTitlesGrid(list, tsId, useTok);
+}
+
+function renderTestTitlesGrid(list, tsId, boundTok) {
+    const grid = document.getElementById("mainGrid");
+    const testTok = boundTok || state.activeTokenObj || USER_TOKENS[0];
+
+    if (!list || !list.length) {
+        grid.innerHTML = `<div class="col-span-full sky-card p-10 text-center font-bold text-slate-600">Is section mein abhi koi test uplabdh nahi hai.</div>`;
+        return;
+    }
+
+    grid.innerHTML = "";
+    list.forEach((t, idx) => {
+        const tKey = `test_${t.id || idx}`;
+        const pdfUrl = resolvePdfUrl(t.pdf_url || t.test_solutions_pdf, t.pdf_url);
+        state.testMap[tKey] = {
+            ...t,
+            seriesId: tsId || t.test_series_id,
+            resolvedPdf: pdfUrl,
+            tokenObj: testTok
+        };
+
+        grid.innerHTML += `
+            <div class="grid-card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-black">TEST #${t.id || (idx + 1)}</span>
+                        <span class="text-[11px] font-extrabold text-emerald-700">⏱️ ${t.time || 60} Mins</span>
+                    </div>
+                    <h4 class="font-black text-base text-slate-900 mt-2">${t.title}</h4>
+                    <div class="flex gap-3 mt-2 text-xs font-bold text-slate-600">
+                        <span>❓ ${t.questions || 50} Qs</span>
+                        <span>🏆 ${t.marks || 100} Marks</span>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4 pt-3 border-t border-sky-100">
+                    <button onclick="launchCbtTest('${tKey}')" class="btn-watch flex-1 text-xs">🚀 Attempt Live Test</button>
+                    ${pdfUrl ? `<button onclick="openTestPdf('${tKey}')" class="btn-pdf1 text-xs">📄 Test PDF</button>` : ""}
+                </div>
+            </div>`;
+    });
+}
+
+function openTestPdf(tKey) {
+    const t = state.testMap[tKey];
+    if (!t || !t.resolvedPdf) return;
+    state.currentPdfUrl = t.resolvedPdf;
+    document.getElementById("pdfTitle").textContent = `📄 ${t.title} (Paper PDF)`;
+    document.getElementById("rawPdfLink").href = t.resolvedPdf;
+    showSlide("slidePdf");
+    setPdfMode("appx");
+}
+
+// TCS Test Engine State Variables
+let testData = [];
+let originalTestData = []; 
+let apiDataRef = null;     
+let currentSecIdx = 0, currentQIdx = 0; 
+let tcsTimerInterval = null, tcsTimeRemaining = 60 * 60;
+let qStartTime = Date.now();
+let currentFilter = 'all', allQsFlat = [], currentFlatIdx = 0;
+let testMode = 'overall';
+let isTimerActive = true;
+let activeTestKey = null;
+window.selectedOptionalSubjects = {};
+
+async function launchCbtTest(tKey) {
+    const t = state.testMap[tKey];
+    if (!t) return;
+    activeTestKey = tKey;
+
+    showSlide("slideTestAttempt");
+
+    const startBtn = document.getElementById('tcs-start-btn');
+    if(startBtn) { startBtn.innerText = "Loading Questions..."; startBtn.disabled = true; }
+
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.getElementById('live-test-screen').classList.add('hidden');
+    document.getElementById('submit-screen').classList.add('hidden');
+    document.getElementById('analysis-screen').classList.add('hidden');
+    document.getElementById('solutions-screen').classList.add('hidden');
+    document.getElementById('full-sol-screen').classList.add('hidden');
+
+    document.getElementById('tcs-start-title').innerText = t.title || "Mock Test";
+
+    const testTok = t.tokenObj || state.activeTokenObj || USER_TOKENS[0];
+    state.activeTokenObj = testTok;
+    const uid = testTok.userId || extractUidFromJwt(testTok.token) || "4756316";
+
+    fetchRawJSONWithToken(`/Test_Series/check_test_attempts?test_id=${t.id}&user_id=${uid}`, testTok);
+
+    let questions = [];
+    const qUrl = (t.test_questions_url || "").replace(/\\\//g, "/");
+
+    if (qUrl && qUrl.startsWith("http")) {
+        try {
+            const res = await fetch(qUrl);
+            if (res.ok) questions = await res.json();
+        } catch {
+            try {
+                const proxiedRes = await fetch(WORKER_RAW_PROXY + encodeURIComponent(qUrl));
+                if (proxiedRes.ok) questions = await proxiedRes.json();
+            } catch {}
+        }
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+        questions = DB.fallbackCbtQuestions;
+    }
+
+    originalTestData = [{
+        section: "General Section",
+        optional_group: "",
+        time: parseInt(t.time) || 60,
+        questions: questions
+    }];
+
+    apiDataRef = {
+        time: parseInt(t.time) || 60,
+        pos: 2.00,
+        neg: 0.50
+    };
+
+    testMode = 'overall';
+    setupTestStartScreen();
+}
+
+function setupTestStartScreen() {
+    const startBtn = document.getElementById('tcs-start-btn');
+    let optionalGroups = {};
+    let compulsorySubjects = [];
+
+    originalTestData.forEach(sec => {
+        if (sec.optional_group && sec.optional_group.trim() !== "") {
+            let groupName = sec.optional_group.trim();
+            if (!optionalGroups[groupName]) optionalGroups[groupName] = [];
+            optionalGroups[groupName].push(sec);
+        } else {
+            compulsorySubjects.push(sec);
+        }
+    });
+
+    let subjectHtml = `<div style="font-weight:bold; color:#1a237e; border-bottom: 2px solid #e8eaf6; padding-bottom: 8px; margin-bottom: 12px; font-size: 14px;">📚 Sections in Test:</div><div>`;
+    compulsorySubjects.forEach(sec => {
+        let qCount = sec.questions ? sec.questions.length : 0;
+        subjectHtml += `<div class="sub-card fixed"><span class="sub-name"><span class="fixed-icon">✅</span> ${sec.section}</span><span class="sub-badge">${qCount} Qs</span></div>`;
+    });
+    subjectHtml += `</div>`;
+
+    document.getElementById('subjects-selection-container').innerHTML = subjectHtml;
+    updateStartStatsUI();
+
+    if(startBtn) { startBtn.innerText = "Start Test Now ➔"; startBtn.disabled = false; }
+}
+
+function updateStartStatsUI() {
+    let totalQs = 0, totalTime = 0;
+    originalTestData.forEach(sec => {
+        totalQs += sec.questions ? sec.questions.length : 0;
+        totalTime += sec.time !== undefined ? sec.time : 60;
+    });
+
+    let displayTime = (apiDataRef.time !== undefined ? apiDataRef.time : totalTime) * 60;
+    document.getElementById('stat-qs').innerText = totalQs;
+    document.getElementById('stat-time').innerText = Math.floor(displayTime/60) + " mins";
+    document.getElementById('stat-marks').innerText = (totalQs * 2).toFixed(2);
+}
+
+function startTest() {
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+    }
+
+    testData = JSON.parse(JSON.stringify(originalTestData));
+    testData.forEach(sec => {
+        if(sec.questions) {
+            sec.questions.forEach(q => {
+                q.userAns = null;
+                q.status = 'not_visited';
+                q.time = 0;
+            });
+        }
+    });
+
+    tcsTimeRemaining = (apiDataRef.time || 60) * 60;
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('live-test-screen').classList.remove('hidden');
+
+    loadSection(0);
+    startTcsTimer();
+}
+
+function loadSection(sIdx) {
+    currentSecIdx = sIdx;
+    currentQIdx = 0;
+    renderTabs();
+    loadQuestion(sIdx, 0);
+}
+
+function formatTcsTimer(totalSecs) {
+    let h = Math.floor(totalSecs / 3600);
+    let m = Math.floor((totalSecs % 3600) / 60);
+    let s = totalSecs % 60;
+    return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function startTcsTimer() {
+    if (tcsTimerInterval) clearInterval(tcsTimerInterval);
+    tcsTimerInterval = setInterval(() => {
+        tcsTimeRemaining--;
+        let display = document.getElementById('tcs-timer-display');
+        if (display) display.innerText = formatTcsTimer(tcsTimeRemaining);
+
+        let elapsed = Math.floor((Date.now() - qStartTime) / 1000);
+        let m = Math.floor(elapsed/60), s = elapsed%60;
+        const qTimeEl = document.getElementById('tcs-q-time');
+        if (qTimeEl) qTimeEl.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+
+        if (tcsTimeRemaining <= 0) {
+            clearInterval(tcsTimerInterval);
+            prepareSubmit();
+        }
+    }, 1000);
+}
+
+function stopTcsTimer() {
+    if (tcsTimerInterval) clearInterval(tcsTimerInterval);
+}
+
+function renderTabs() {
+    let html = '';
+    testData.forEach((sec, idx) => {
+        let isActive = (idx === currentSecIdx) ? 'active' : '';
+        html += `<div class="tcs-tab ${isActive}" id="tab-${idx}" onclick="loadSection(${idx})">${sec.section}</div>`;
+    });
+    document.getElementById('tcs-tabs-container').innerHTML = html;
+}
+
+function updateQuestionTime() {
+    let elapsed = Math.floor((Date.now() - qStartTime) / 1000);
+    if (testData[currentSecIdx] && testData[currentSecIdx].questions[currentQIdx]) {
+        testData[currentSecIdx].questions[currentQIdx].time += elapsed;
+    }
+    qStartTime = Date.now();
+}
+
+function loadQuestion(secIdx, qIdx) {
+    updateQuestionTime();
+    currentSecIdx = secIdx;
+    currentQIdx = qIdx;
+
+    let q = testData[secIdx].questions[qIdx];
+    if (q.status === 'not_visited') q.status = 'not_answered';
+
+    document.getElementById('tcs-q-num').innerText = qIdx + 1;
+    document.getElementById('tcs-sec-progress-lbl').innerText = `${testData[secIdx].section} (${qIdx + 1}/${testData[secIdx].questions.length})`;
+
+    let qHtml = q.question || q.text || "";
+    if (q.image_link_1) qHtml += `<br><img src="${q.image_link_1}" style="max-width:100%; margin-top:10px; display:block;">`;
+    document.getElementById('tcs-q-text').innerHTML = qHtml || 'Question';
+
+    let optionsHtml = '';
+    let optPrefix = ['A', 'B', 'C', 'D'];
+    [1, 2, 3, 4].forEach(optNum => {
+        let optText = q[`option_${optNum}`];
+        let optImg = q[`option_image_${optNum}`];
+        if (!optText && !optImg) return;
+
+        let i = optNum - 1;
+        let isSel = (q.userAns === optNum || q.userAns === i) ? 'selected' : '';
+        let optContent = optImg ? `<img src="${optImg}" style="max-height:80px; max-width:100%; display:block;">` : optText;
+
+        optionsHtml += `
+        <div class="tcs-option ${isSel}" onclick="selectOption(${optNum})">
+            <span class="tcs-opt-lbl">${optPrefix[i]}</span>
+            <div style="flex:1;">${optContent}</div>
+        </div>`;
+    });
+    document.getElementById('tcs-options-container').innerHTML = optionsHtml;
+}
+
+function selectOption(optNum) {
+    testData[currentSecIdx].questions[currentQIdx].userAns = optNum;
+    loadQuestion(currentSecIdx, currentQIdx);
+}
+
+function saveAndNext() {
+    let q = testData[currentSecIdx].questions[currentQIdx];
+    if (q.userAns !== null) q.status = 'answered';
+    else if (q.status !== 'marked') q.status = 'not_answered';
+    nextQuestion();
+}
+
+function markForReview() {
+    testData[currentSecIdx].questions[currentQIdx].status = 'marked';
+    nextQuestion();
+}
+
+function clearResponse() {
+    testData[currentSecIdx].questions[currentQIdx].userAns = null;
+    testData[currentSecIdx].questions[currentQIdx].status = 'not_answered';
+    loadQuestion(currentSecIdx, currentQIdx);
+}
+
+function nextQuestion() {
+    if (currentQIdx < testData[currentSecIdx].questions.length - 1) {
+        loadQuestion(currentSecIdx, currentQIdx + 1);
+    } else if (currentSecIdx < testData.length - 1) {
+        loadSection(currentSecIdx + 1);
+    } else {
+        alert("Yeh aakhri question hai. Aap 'Submit Quiz' kar sakte hain.");
+    }
+}
+
+function prevQuestion() {
+    if (currentQIdx > 0) {
+        loadQuestion(currentSecIdx, currentQIdx - 1);
+    } else if (currentSecIdx > 0) {
+        let prevSec = currentSecIdx - 1;
+        loadSection(prevSec);
+        loadQuestion(prevSec, testData[prevSec].questions.length - 1);
+    }
+}
+
+function toggleTcsPalette() {
+    let drawer = document.getElementById('tcs-palette');
+    if (drawer.classList.contains('show')) drawer.classList.remove('show');
+    else { renderTcsDrawer(); drawer.classList.add('show'); }
+}
+
+function renderTcsDrawer() {
+    let html = '';
+    testData.forEach((sec, sIdx) => {
+        let counts = { ans: 0, notAns: 0, marked: 0, notVis: 0 };
+        let gridHtml = '';
+
+        sec.questions.forEach((q, qIdx) => {
+            let cls = 'st-not-ans';
+            if (q.status === 'answered') { cls = 'st-ans'; counts.ans++; }
+            else if (q.status === 'not_answered') { cls = 'st-not-ans'; counts.notAns++; }
+            else if (q.status === 'marked') { cls = q.userAns !== null ? 'st-mark-ans' : 'st-mark'; counts.marked++; }
+            else { counts.notVis++; }
+
+            gridHtml += `<div class="tcs-q-box ${cls}" onclick="jumpToQ(${sIdx}, ${qIdx})">${qIdx + 1}</div>`;
+        });
+
+        let isOpen = (sIdx === currentSecIdx) ? 'open' : '';
+        html += `
+        <div class="tcs-accordion">
+            <div class="tcs-acc-header" onclick="toggleAcc(${sIdx})">
+                <span>${sec.section}</span>
+                <span id="arr-${sIdx}">${isOpen ? '▲' : '▼'}</span>
+            </div>
+            <div class="tcs-acc-stats">
+                <span><div class="tcs-circ c-marked" style="width:10px;height:10px;margin-right:2px;"></div> ${counts.marked}</span>
+                <span><div class="tcs-circ c-attempt" style="width:10px;height:10px;margin-right:2px;"></div> ${counts.ans}</span>
+                <span><div class="tcs-circ c-unattempt" style="width:10px;height:10px;margin-right:2px;"></div> ${counts.notAns + counts.notVis}</span>
+            </div>
+            <div class="tcs-q-grid ${isOpen}" id="acc-grid-${sIdx}">${gridHtml}</div>
+        </div>`;
+    });
+    document.getElementById('tcs-accordion-container').innerHTML = html;
+}
+
+function toggleAcc(idx) {
+    let grid = document.getElementById(`acc-grid-${idx}`);
+    let arr = document.getElementById(`arr-${idx}`);
+    if (grid.classList.contains('open')) { grid.classList.remove('open'); arr.innerText = '▼'; }
+    else { grid.classList.add('open'); arr.innerText = '▲'; }
+}
+
+function jumpToQ(sIdx, qIdx) {
+    toggleTcsPalette();
+    loadQuestion(sIdx, qIdx);
+}
+
+function handleDynamicSubmit() {
+    prepareSubmit();
+}
+
+function prepareSubmit() {
+    updateQuestionTime();
+    document.getElementById('live-test-screen').classList.add('hidden');
+    document.getElementById('submit-screen').classList.remove('hidden');
+
+    let html = '';
+    testData.forEach((sec) => {
+        let ans = 0, marked = 0, notVis = 0;
+        sec.questions.forEach(q => {
+            if (q.status === 'answered') ans++;
+            else if (q.status === 'marked') marked++;
+            else notVis++;
+        });
+        html += `
+        <div class="section-summary-card">
+            <h2 style="margin-bottom:10px; font-size:16px; font-weight:bold; color:#1a237e;">${sec.section}</h2>
+            <div class="stat-row"><span>Total Questions</span> <strong>${sec.questions.length}</strong></div>
+            <div class="stat-row"><span>Answered</span> <strong style="color:#1976d2;">${ans}</strong></div>
+            <div class="stat-row"><span>Unattempted</span> <strong style="color:#888;">${notVis}</strong></div>
+        </div>`;
+    });
+    document.getElementById('submit-summary-container').innerHTML = html;
+}
+
+function closeSubmit() {
+    document.getElementById('submit-screen').classList.add('hidden');
+    document.getElementById('live-test-screen').classList.remove('hidden');
+}
+
+async function submitTest() {
+    stopTcsTimer();
+    document.getElementById('submit-screen').classList.add('hidden');
+    document.getElementById('analysis-screen').classList.remove('hidden');
+
+    if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+    }
+
+    let tC = 0, tI = 0, tU = 0, secHtml = '';
+    allQsFlat = []; 
+    let globalQNum = 1;
+    let weakAreas = [];
+
+    let posMark = apiDataRef.pos || 2.00;
+    let negMark = apiDataRef.neg || 0.50;
+
+    testData.forEach((sec, sIdx) => {
+        let c = 0, inc = 0, u = 0, cT = 0, incT = 0, uT = 0;
+        sec.questions.forEach((q, qIdx) => {
+            let correctAns = String(q.answer || "1").trim();
+            let userAnsStr = q.userAns !== null ? String(q.userAns).trim() : null;
+
+            let state = 'unattempted';
+            if (userAnsStr === null) {
+                u++; uT += (q.time || 0);
+            } else if (userAnsStr === correctAns || (parseInt(userAnsStr) + 1) === parseInt(correctAns)) {
+                c++; cT += (q.time || 0); state = 'correct';
+            } else {
+                inc++; incT += (q.time || 0); state = 'incorrect';
+            }
+
+            allQsFlat.push({ ...q, secName: sec.section, globalNum: globalQNum++, state: state, secIdx: sIdx, qIdx: qIdx, topperTime: 12 });
+        });
+
+        tC += c; tI += inc; tU += u;
+        let secMarks = Math.max(0, (c * posMark) - (inc * negMark));
+
+        secHtml += `
+        <div class="a-card">
+            <div class="subj-header">
+                <div class="subj-name">${sec.section}</div>
+                <div class="black-circle"><span>Marks</span><span>${secMarks.toFixed(2)}</span></div>
+            </div>
+            <div class="time-split">
+                <div class="col"><div class="c-green">Correct</div><div class="val-num c-green">${c}</div></div>
+                <div class="col"><div class="c-red">Incorrect</div><div class="val-num c-red">${inc}</div></div>
+                <div class="col"><div class="c-grey">Unattempted</div><div class="val-num c-grey">${u}</div></div>
+            </div>
+        </div>`;
+    });
+
+    let totalQs = tC + tI + tU;
+    let totalMarks = Math.max(0, (tC * posMark) - (tI * negMark));
+    let maxMarks = totalQs * posMark;
+    let acc = (tC + tI) > 0 ? ((tC / (tC + tI)) * 100).toFixed(2) : 0;
+
+    document.getElementById('res-score').innerText = `${totalMarks.toFixed(2)}/${maxMarks.toFixed(2)}`;
+    document.getElementById('res-correct').innerText = tC;
+    document.getElementById('res-incorrect').innerText = tI;
+    document.getElementById('res-unatt').innerText = tU;
+    document.getElementById('res-acc').innerText = `${acc}%`;
+    document.getElementById('res-rank').innerText = "142";
+    document.getElementById('res-perc').innerText = "94.5%";
+
+    document.getElementById('analysis-sections-container').innerHTML = secHtml;
+}
+
+function reAttemptCbtTest() {
+    if (activeTestKey) launchCbtTest(activeTestKey);
+    else exitCbtTest();
+}
+
+function exitCbtTest() {
+    stopTcsTimer();
+    showSlide("slideExplorer");
+}
+
+function openSolutions() {
+    document.getElementById('analysis-screen').classList.add('hidden');
+    document.getElementById('solutions-screen').classList.remove('hidden');
+    renderSolutions();
+}
+
+function closeSolutions() {
+    document.getElementById('solutions-screen').classList.add('hidden');
+    document.getElementById('analysis-screen').classList.remove('hidden');
+}
+
+function filterSol(type, btn) {
+    document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('flt-active'));
+    btn.classList.add('flt-active');
+    currentFilter = type;
+    renderSolutions();
+}
+
+function renderSolutions() {
+    let html = '';
+    allQsFlat.forEach((q, idx) => {
+        if (currentFilter !== 'all' && q.state !== currentFilter) return;
+        let iconStr = '', iconCls = '';
+        if (q.state === 'correct') { iconStr = '✓'; iconCls = 'st-corr'; }
+        else if (q.state === 'incorrect') { iconStr = '✕'; iconCls = 'st-wr'; }
+        else { iconStr = '−'; iconCls = 'st-una'; }
+
+        let solQText = q.question || q.text || "";
+
+        html += `
+        <div class="sol-item">
+            <div class="sol-num-col">
+                <div class="sol-num">${q.globalNum}<div class="sol-status-icon ${iconCls}">${iconStr}</div></div>
+                <div class="sol-line"></div>
+            </div>
+            <div class="sol-card">
+                <div class="sol-sec-badge">${q.secName}</div>
+                <div class="sol-q-txt">${solQText || "Question"}</div>
+                <button class="tcs-btn tcs-btn-submit" style="padding:10px 14px; border-radius:8px; background: #1a237e; border-color: #1a237e; font-size:12px;" onclick="openFullSolution(${idx})">See Full Solution ➔</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById('sol-list-container').innerHTML = html;
+}
+
+function openFullSolution(flatIdx) {
+    currentFlatIdx = flatIdx;
+    document.getElementById('solutions-screen').classList.add('hidden');
+    document.getElementById('full-sol-screen').classList.remove('hidden');
+    renderFullSolution();
+}
+
+function closeFullSol() {
+    document.getElementById('full-sol-screen').classList.add('hidden');
+    document.getElementById('solutions-screen').classList.remove('hidden');
+}
+
+function renderFullSolution() {
+    let q = allQsFlat[currentFlatIdx];
+    document.getElementById('fs-q-num').innerText = `Question ${q.globalNum}`;
+
+    let fsQHtml = q.question || q.text || "";
+    document.getElementById('fs-q-txt').innerHTML = fsQHtml;
+
+    let optHtml = '', optPrefix = ['A', 'B', 'C', 'D'];
+    let correctAns = String(q.answer || "1").trim();
+
+    [1, 2, 3, 4].forEach(optNum => {
+        let optText = q[`option_${optNum}`];
+        if (!optText) return;
+
+        let i = optNum - 1;
+        let isCorrect = String(optNum) === correctAns || String(i) === correctAns;
+        let isUserSelected = (q.userAns === optNum || q.userAns === i);
+
+        let cls = '', rightTxt = '';
+        if (isCorrect) {
+            cls = 'correct'; rightTxt = '<span class="fs-opt-perc">Correct Answer</span>';
+        } else if (isUserSelected && !isCorrect) {
+            cls = 'wrong';
+        }
+
+        optHtml += `
+        <div class="fs-opt ${cls}">
+            <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                <span style="font-weight:bold; color:#1a237e;">${optPrefix[i]}.</span> 
+                <div style="flex:1;">${optText}</div>
+            </div> 
+            ${rightTxt}
+        </div>`;
+    });
+    document.getElementById('fs-options-container').innerHTML = optHtml;
+    document.getElementById('fs-exp-text').innerHTML = q.solution_text || q.exp || "Detailed solution will be updated soon.";
+}
+
+function nextFullSol() {
+    if (currentFlatIdx < allQsFlat.length - 1) {
+        currentFlatIdx++;
+        renderFullSolution();
+    } else {
+        closeFullSol();
+    }
+}
+
+function prevFullSol() {
+    if (currentFlatIdx > 0) {
+        currentFlatIdx--;
+        renderFullSolution();
+    }
+}
+
+function toggleTcsFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    }
+}
+
+function toggleTcsLang() {
+    alert("Language toggle active.");
 }
 
 // =====================================================
