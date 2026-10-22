@@ -1488,6 +1488,169 @@ function renderTestTitlesGrid(list, tsId, boundTok) {
                     <div class="flex justify-between items-center gap-2">
                         <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-black">TEST #${t.id || (idx + 1)}</span>
                         <span class="text-[11px] font-extrabold text-emerald-700">⏱️ ${t.time || 60} Mins</span>
+// =====================================================
+// TEST SERIES & TCS PATTERN CBT ENGINE (PERMANENT FIXED)
+// =====================================================
+async function openTestSeriesExplorer(mode) {
+    if (!enforceCompulsoryLogin()) return;
+    state.tsMode = mode;
+    state.view = "ts_list";
+    showSlide("slideExplorer");
+    document.getElementById("subTabs").classList.add("hidden");
+
+    const grid = document.getElementById("mainGrid");
+    grid.innerHTML = `<div class="col-span-full py-12 text-center font-extrabold text-slate-800">🔄 Loading Official RWA Test Series...</div>`;
+
+    const primaryTok = USER_TOKENS[0];
+    state.activeTokenObj = primaryTok;
+
+    if (mode === "paid_ts") {
+        document.getElementById("crumbText").textContent = "Official Exam Series";
+        document.getElementById("headingText").textContent = "🏆 Paid Test Series";
+
+        const p0 = await fetchAPIWithToken(`/get/test_series?start=0&search=&client_api_url=&exam_id=`, primaryTok, () => []);
+        const p10 = await fetchAPIWithToken(`/get/test_series?start=10&search=&client_api_url=&exam_id=`, primaryTok, () => []);
+        let combined = [...(Array.isArray(p0) ? p0 : []), ...(Array.isArray(p10) ? p10 : [])];
+
+        if (combined.length === 0) combined = DB.paidTestSeries;
+
+        const seen = new Set();
+        grid.innerHTML = "";
+        combined.forEach(ts => {
+            if (seen.has(String(ts.id))) return;
+            seen.add(String(ts.id));
+            const title = (ts.title || "Paid Test Series").replace(/'/g, "");
+            const logo = ts.logo || "https://placehold.co/600x320/4f46e5/ffffff?text=Test+Series";
+            grid.innerHTML += `
+                <div onclick="openTestSeriesSubjects('${ts.id}', '${title}')" class="grid-card overflow-hidden cursor-pointer flex flex-col justify-between">
+                    <div>
+                        <img src="${logo}" onerror="this.src='https://placehold.co/600x320/4f46e5/ffffff?text=RWA+Test+Series'" class="w-full h-44 object-cover">
+                        <div class="p-4">
+                            <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-black">SERIES #${ts.id}</span>
+                            <h3 class="font-black text-base text-slate-900 mt-2">${ts.title}</h3>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <div class="btn-watch w-full text-center text-xs">Open Test Subjects ➔</div>
+                    </div>
+                </div>`;
+        });
+    } else {
+        document.getElementById("crumbText").textContent = "Weekly Mock Tests";
+        document.getElementById("headingText").textContent = "📝 Free Test Series";
+
+        const f0 = await fetchAPIWithToken(`/get/quiz_test_series?start=0&exam_id=`, primaryTok, () => []);
+        const f10 = await fetchAPIWithToken(`/get/quiz_test_series?start=10&exam_id=`, primaryTok, () => []);
+        let combined = [...(Array.isArray(f0) ? f0 : []), ...(Array.isArray(f10) ? f10 : [])];
+
+        if (combined.length === 0) combined = DB.freeTestSeries;
+
+        const seen = new Set();
+        grid.innerHTML = "";
+        combined.forEach(ts => {
+            if (seen.has(String(ts.id))) return;
+            seen.add(String(ts.id));
+            const title = (ts.title || "Free Test Series").replace(/'/g, "");
+            const logo = ts.logo || "https://placehold.co/600x320/0891b2/ffffff?text=Free+Tests";
+            grid.innerHTML += `
+                <div onclick="openTestSeriesSubjects('${ts.id}', '${title}')" class="grid-card overflow-hidden cursor-pointer flex flex-col justify-between">
+                    <div>
+                        <img src="${logo}" onerror="this.src='https://placehold.co/600x320/0891b2/ffffff?text=Free+Test+Series'" class="w-full h-44 object-cover">
+                        <div class="p-4">
+                            <span class="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 text-[10px] font-black">FREE SERIES #${ts.id}</span>
+                            <h3 class="font-black text-base text-slate-900 mt-2">${ts.title}</h3>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <div class="btn-watch w-full text-center text-xs">View All Mock Tests ➔</div>
+                    </div>
+                </div>`;
+        });
+    }
+}
+
+async function openTestSeriesSubjects(tsId, tsTitle) {
+    state.activeSeriesId = tsId;
+    state.activeSeriesTitle = tsTitle;
+    state.view = "ts_subjects";
+    document.getElementById("crumbText").textContent = `Test Series #${tsId}`;
+    document.getElementById("headingText").textContent = tsTitle;
+
+    const grid = document.getElementById("mainGrid");
+    grid.innerHTML = `<div class="col-span-full py-10 text-center font-bold text-slate-700">Loading Test Series Subjects...</div>`;
+
+    const useTok = state.activeTokenObj || USER_TOKENS[0];
+    const subs = await fetchAPIWithToken(`/get/testseries_subjects?testseries_id=${tsId}`, useTok, () => DB.tsSubjects[tsId] || []);
+
+    if (!subs || subs.length === 0 || (subs.length === 1 && String(subs[0].subjectid) === "-1")) {
+        openTestSeriesTitles(tsId, "-1", tsTitle);
+        return;
+    }
+
+    grid.innerHTML = "";
+    subs.forEach(s => {
+        const sname = (s.subject_name || "Mock Tests").replace(/'/g, "");
+        const logo = s.subject_logo || `https://placehold.co/80x80/4f46e5/ffffff?text=${encodeURIComponent(sname.slice(0, 3))}`;
+        grid.innerHTML += `
+            <div onclick="openTestSeriesTitles('${tsId}', '${s.subjectid}', '${sname}')" class="grid-card p-4 flex items-center gap-4 cursor-pointer">
+                <img src="${logo}" onerror="this.src='https://placehold.co/80x80/4f46e5/ffffff?text=TEST'" class="w-16 h-16 rounded-2xl object-cover shadow-md">
+                <div class="flex-1">
+                    <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 text-[10px] font-black">SUBJECT #${s.subjectid}</span>
+                    <h4 class="font-black text-base text-slate-900 mt-1">${s.subject_name}</h4>
+                    <p class="text-xs text-blue-600 font-extrabold mt-1">Open Mock Tests ➔</p>
+                </div>
+            </div>`;
+    });
+}
+
+async function openTestSeriesTitles(tsId, subId, subName) {
+    state.view = "ts_tests";
+    state.activeSeriesId = tsId;
+    state.activeTsSubId = String(subId);
+    state.activeTsSubName = subName;
+
+    document.getElementById("crumbText").textContent = state.activeSeriesTitle;
+    document.getElementById("headingText").textContent = `📝 ${subName}`;
+
+    const grid = document.getElementById("mainGrid");
+    grid.innerHTML = `<div class="col-span-full py-10 text-center font-bold text-slate-700">Fetching Mock Tests...</div>`;
+
+    const useTok = state.activeTokenObj || USER_TOKENS[0];
+    const uid = useTok.userId || extractUidFromJwt(useTok.token) || "4756316";
+    const ep = String(subId) === "-1"
+        ? `/get/test_titlev2?testseriesid=${tsId}&subject_id=-1&chapter_id=-1&userid=${uid}&search=&start=-1`
+        : `/get/test_titlev2?testseriesid=${tsId}&subject_id=${subId}&userid=${uid}&search=&start=-1`;
+
+    const list = await fetchAPIWithToken(ep, useTok, () => DB.tsTitles[`${tsId}_${subId}`] || DB.tsTitles["743_-1"] || []);
+    renderTestTitlesGrid(list, tsId, useTok);
+}
+
+function renderTestTitlesGrid(list, tsId, boundTok) {
+    const grid = document.getElementById("mainGrid");
+    const testTok = boundTok || state.activeTokenObj || USER_TOKENS[0];
+
+    if (!list || !list.length) {
+        grid.innerHTML = `<div class="col-span-full sky-card p-10 text-center font-bold text-slate-600">Is section mein abhi koi test uplabdh nahi hai.</div>`;
+        return;
+    }
+
+    grid.innerHTML = "";
+    list.forEach((t, idx) => {
+        const tKey = `test_${t.id || idx}`;
+        const pdfUrl = resolvePdfUrl(t.pdf_url || t.test_solutions_pdf, t.pdf_url);
+        state.testMap[tKey] = {
+            ...t,
+            seriesId: tsId || t.test_series_id,
+            resolvedPdf: pdfUrl,
+            tokenObj: testTok
+        };
+
+        grid.innerHTML += `
+            <div class="grid-card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 text-[10px] font-black">TEST #${t.id || (idx + 1)}</span>
+                        <span class="text-[11px] font-extrabold text-emerald-700">⏱️ ${t.time || 60} Mins</span>
                     </div>
                     <h4 class="font-black text-base text-slate-900 mt-2">${t.title}</h4>
                     <div class="flex gap-3 mt-2 text-xs font-bold text-slate-600">
@@ -1513,7 +1676,7 @@ function openTestPdf(tKey) {
     setPdfMode("appx");
 }
 
-// TCS Test Engine State Variables
+// TCS Test Engine State Variables & Layout Fix
 let testData = [];
 let originalTestData = []; 
 let apiDataRef = null;     
@@ -1524,7 +1687,6 @@ let currentFilter = 'all', allQsFlat = [], currentFlatIdx = 0;
 let testMode = 'overall';
 let isTimerActive = true;
 let activeTestKey = null;
-window.selectedOptionalSubjects = {};
 
 async function launchCbtTest(tKey) {
     const t = state.testMap[tKey];
@@ -1535,6 +1697,13 @@ async function launchCbtTest(tKey) {
 
     const startBtn = document.getElementById('tcs-start-btn');
     if(startBtn) { startBtn.innerText = "Loading Questions..."; startBtn.disabled = true; }
+
+    // Ensure container takes proper full screen layout
+    const attemptSlide = document.getElementById('slideTestAttempt');
+    if (attemptSlide) {
+        attemptSlide.style.display = "block";
+        attemptSlide.style.opacity = "1";
+    }
 
     document.getElementById('start-screen').classList.remove('hidden');
     document.getElementById('live-test-screen').classList.add('hidden');
@@ -1579,14 +1748,13 @@ async function launchCbtTest(tKey) {
 
     apiDataRef = {
         time: parseInt(t.time) || 60,
-        pos: 2.00,
-        neg: 0.50
+        pos: parseFloat(t.marks_per_question || 2.00),
+        neg: parseFloat(t.negative_marks || 0.50)
     };
 
     testMode = 'overall';
     setupTestStartScreen();
 }
-
 function setupTestStartScreen() {
     const startBtn = document.getElementById('tcs-start-btn');
     let optionalGroups = {};
