@@ -8,7 +8,7 @@ body {
     background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 50%, #e0f2fe 100%);
     background-attachment: fixed;
     color: #0f172a;
-    font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .sky-nav {
@@ -259,7 +259,6 @@ video {
     background: #000;
 }
 
-/* TRUE FULLSCREEN STYLING */
 #hlsScreen:fullscreen {
     width: 100vw !important;
     height: 100vh !important;
@@ -304,7 +303,6 @@ video {
     to { transform: rotate(360deg); }
 }
 
-/* 90% TRANSPARENT OVERLAY CONTROLS (HIDE/SHOW ANIMATION) */
 .controls {
     position: absolute;
     bottom: 0;
@@ -507,29 +505,37 @@ video {
     transition: width 0.2s ease;
 }
 
-.tcs-master-wrapper {
-    position: relative !important;
-    width: 100%;
-    min-height: 85vh;
+/* =========================================================
+   EXACT TCS.HTML UI STYLES (STEP-BY-STEP FULL PAGE ENGINE)
+   ========================================================= */
+.tcs-outer-shell {
+    position: fixed;
+    inset: 0;
+    background-color: #333;
     display: flex;
     justify-content: center;
-    background: transparent !important;
+    z-index: 45;
+    overflow: hidden;
 }
 
 .app-container {
     width: 100%;
-    max-width: 650px;
+    max-width: 480px;
+    height: 100vh;
     background-color: #f8f9fa;
     position: relative;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border: 2px solid #e0f2fe;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
 }
 
-/* --- START SCREEN UI --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- STEP 1: START SCREEN UI CSS --- */
 #start-screen {
-    background-color: rgba(51, 65, 85, 0.95);
+    background-color: rgba(85, 85, 85, 0.92);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -544,7 +550,7 @@ video {
     padding: 22px;
     max-height: 92vh;
     overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .start-card h2 {
@@ -647,7 +653,7 @@ video {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 13.5px;
     color: #333;
     font-weight: bold;
 }
@@ -663,7 +669,7 @@ video {
 
 .start-btn {
     width: 100%;
-    background: #1a237e;
+    background: #222;
     color: #fff;
     border: none;
     padding: 14px;
@@ -672,20 +678,15 @@ video {
     font-weight: bold;
     margin-top: 16px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-    transition: background 0.2s;
-}
-
-.start-btn:hover {
-    background: #111858;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .start-btn:disabled {
-    background: #94a3b8;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-/* --- LIVE TEST SCREEN UI --- */
+/* --- STEP 2: LIVE TCS TEST SCREEN CSS --- */
 .tcs-header {
     background: #1a237e;
     color: white;
@@ -703,7 +704,6 @@ video {
     font-weight: bold;
     display: flex;
     align-items: center;
-    font-variant-numeric: tabular-nums;
 }
 
 .tcs-hamburger {
@@ -760,17 +760,17 @@ video {
 }
 
 .tcs-q-badge {
-    background: #1a237e;
+    background: #888;
     color: white;
-    min-width: 26px;
-    height: 26px;
-    padding: 0 6px;
-    border-radius: 99px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     margin-right: 8px;
+    font-size: 12px;
 }
 
 .tcs-marks {
@@ -792,23 +792,21 @@ video {
 .tcs-question-area {
     background: #fff;
     padding: 16px;
-    padding-bottom: 150px;
-    min-height: calc(100vh - 180px);
+    padding-bottom: 145px;
+    min-height: calc(100vh - 160px);
 }
 
 .tcs-q-text, .fs-q-txt, .fs-exp-text, .sol-q-txt {
-    white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    line-height: 1.65;
+    line-height: 1.6;
 }
 
 .tcs-q-text img, .fs-q-txt img, .fs-exp-text img, .sol-q-txt img, .tcs-option img, .fs-opt img {
     max-width: 100% !important;
-    height: auto !important;
+    height: auto;
     vertical-align: middle;
-    border-radius: 6px;
-    margin: 6px 0;
+    border-radius: 4px;
 }
 
 .tcs-q-text {
@@ -818,47 +816,30 @@ video {
 }
 
 .tcs-option {
-    border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     padding: 14px 16px;
     margin-bottom: 12px;
     font-size: 15px;
     display: flex;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-    transition: 0.18s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: 0.2s;
     background: #fff;
     color: #111;
-}
-
-.tcs-option:hover {
-    border-color: #94a3b8;
 }
 
 .tcs-option.selected {
     border-color: #1a237e;
     background: #e8eaf6;
-    box-shadow: 0 2px 8px rgba(26, 35, 126, 0.12);
+    border-width: 2px;
 }
 
 .tcs-opt-lbl {
     margin-right: 14px;
     font-weight: bold;
-    color: #1a237e;
-    background: #f1f5f9;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.tcs-option.selected .tcs-opt-lbl {
-    background: #1a237e;
-    color: #fff;
+    color: #555;
 }
 
 .tcs-footer {
@@ -901,10 +882,10 @@ video {
 
 .tcs-btn {
     flex: 1;
-    padding: 11px 4px;
+    padding: 10px 4px;
     font-size: 11px;
     font-weight: bold;
-    border-radius: 6px;
+    border-radius: 4px;
     text-align: center;
     cursor: pointer;
     border: 1px solid #ccc;
@@ -924,14 +905,14 @@ video {
     border-color: #039be5;
 }
 
-/* --- DRAWER QUESTION PALETTE --- */
+/* --- TCS DRAWER PALETTE --- */
 .tcs-drawer-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0,0,0,0.5);
     z-index: 200;
     opacity: 0;
     pointer-events: none;
@@ -948,14 +929,14 @@ video {
     right: 0;
     top: 0;
     width: 85%;
-    max-width: 340px;
+    max-width: 330px;
     height: 100%;
     background: #fff;
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
     transition: 0.3s ease-out;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
 }
 
 .tcs-drawer-overlay.show .tcs-drawer {
@@ -1002,9 +983,9 @@ video {
 .tcs-leg-item {
     display: flex;
     align-items: center;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     color: #111;
 }
 
@@ -1016,20 +997,12 @@ video {
     display: inline-block;
 }
 
-.c-marked {
-    border: 2px solid #fbc02d;
-}
-
-.c-attempt {
-    background: #1976d2;
-}
-
-.c-unattempt {
-    border: 2px solid #bdbdbd;
-}
+.c-marked { border: 2px solid #fbc02d; }
+.c-attempt { background: #1976d2; }
+.c-unattempt { border: 2px solid #bdbdbd; }
 
 .tcs-accordion {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border-top: 1px solid #eee;
     padding-top: 10px;
 }
@@ -1063,39 +1036,26 @@ video {
 }
 
 .tcs-q-box {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
-.st-ans {
-    background: #1976d2;
-    color: #fff;
-}
-
-.st-not-ans {
-    border: 2px solid #bdbdbd;
-    color: #333;
-}
-
-.st-mark {
-    border: 2px solid #fbc02d;
-    color: #333;
-}
-
+.st-ans { background: #1976d2; color: #fff; }
+.st-not-ans { border: 2px solid #bdbdbd; color: #333; }
+.st-mark { border: 2px solid #fbc02d; color: #333; }
 .st-mark-ans {
     border: 2px solid #fbc02d;
     background: #e3f2fd;
     color: #333;
     position: relative;
 }
-
 .st-mark-ans::after {
     content: '✓';
     position: absolute;
@@ -1106,7 +1066,7 @@ video {
     font-weight: 900;
 }
 
-/* --- SUBMIT SCREEN --- */
+/* --- STEP 3: SUBMIT SCREEN CSS --- */
 #submit-screen {
     background: #f5f5f5;
     min-height: 100vh;
@@ -1130,6 +1090,7 @@ video {
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
+    color: #111;
 }
 
 .stat-row {
@@ -1138,39 +1099,39 @@ video {
     padding: 8px 0;
     border-bottom: 1px solid #f5f5f5;
     font-size: 14px;
-    color: #333;
 }
 
 .confirm-actions {
     text-align: center;
     margin-top: 20px;
     padding-bottom: 40px;
+    color: #111;
 }
 
 .btn-yes {
     background: #1a237e;
     color: white;
     border: none;
-    padding: 12px 28px;
+    padding: 12px 30px;
     border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 16px;
     margin-right: 10px;
     cursor: pointer;
+    font-weight: bold;
 }
 
 .btn-no {
     background: #fff;
     color: #555;
     border: 1px solid #ccc;
-    padding: 12px 28px;
+    padding: 12px 30px;
     border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 16px;
     cursor: pointer;
+    font-weight: bold;
 }
 
-/* --- ANALYSIS SCREEN --- */
+/* --- STEP 4: ANALYSIS SCREEN CSS --- */
 #analysis-screen {
     background: #f5f5f5;
     min-height: 100vh;
@@ -1180,10 +1141,9 @@ video {
 .analysis-header {
     background: #111;
     color: white;
-    padding: 14px 16px;
+    padding: 16px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -1195,40 +1155,22 @@ video {
     margin: 16px 16px 0 16px;
     border-radius: 12px;
     font-weight: bold;
-    font-size: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.rem-excellent {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
-}
-
-.rem-great {
-    background: #e3f2fd;
-    color: #1565c0;
-    border: 1px solid #bbdefb;
-}
-
-.rem-good {
-    background: #fff3e0;
-    color: #ef6c00;
-    border: 1px solid #ffe0b2;
-}
-
-.rem-poor {
-    background: #ffebee;
-    color: #c62828;
-    border: 1px solid #ffcdd2;
-}
+.rem-excellent { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.rem-great { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+.rem-good { background: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+.rem-poor { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
 
 .a-card {
     background: #fff;
     border-radius: 16px;
     padding: 20px;
     margin: 16px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    color: #111;
 }
 
 .sc-grid {
@@ -1246,25 +1188,25 @@ video {
 }
 
 .sc-icon {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    margin-bottom: 10px;
+    font-size: 24px;
+    margin-bottom: 12px;
 }
 
 .sc-val {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
     color: #000;
     margin-bottom: 4px;
 }
 
 .sc-lbl {
-    font-size: 12px;
+    font-size: 13px;
     color: #888;
 }
 
@@ -1283,8 +1225,8 @@ video {
 }
 
 .donut-chart {
-    width: 190px;
-    height: 190px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1292,8 +1234,8 @@ video {
 }
 
 .donut-inner {
-    width: 125px;
-    height: 125px;
+    width: 130px;
+    height: 130px;
     background: #fff;
     border-radius: 50%;
 }
@@ -1342,7 +1284,7 @@ video {
 .col-you { background-color: #f3e5f5; }
 .col-top { background-color: #e8f5e9; }
 .col-avg { background-color: #e8eaf6; }
-.row-lbl { color: #888; text-align: left; background: #fff; font-weight: 600; }
+.row-lbl { color: #888; text-align: left; background: #fff; }
 .sc-you { background: #ce93d8; color: #000; font-weight: bold; }
 .sc-top { background: #ba68c8; color: #fff; font-weight: bold; }
 .sc-avg { background: #ce93d8; font-weight: bold; }
@@ -1359,8 +1301,8 @@ video {
 .time-stats-box {
     display: flex;
     gap: 10px;
-    height: 120px;
-    margin-top: 16px;
+    height: 130px;
+    margin-top: 20px;
 }
 
 .ts-left {
@@ -1409,7 +1351,7 @@ video {
     font-weight: bold;
     font-size: 14px;
     text-align: center;
-    padding: 6px;
+    padding: 8px;
 }
 
 .sec-title {
@@ -1429,7 +1371,6 @@ video {
 .subj-name {
     font-size: 16px;
     font-weight: bold;
-    color: #111;
 }
 
 .black-circle {
@@ -1442,25 +1383,17 @@ video {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 }
 
-.black-circle span:first-child {
-    font-size: 10px;
-    color: #c5cae9;
-}
-
-.black-circle span:last-child {
-    font-size: 15px;
-    font-weight: bold;
-}
+.black-circle span:first-child { font-size: 11px; color: #c5cae9; }
+.black-circle span:last-child { font-size: 16px; font-weight: bold; }
 
 .subj-q-stats {
     text-align: center;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: bold;
     margin-bottom: 12px;
-    color: #444;
+    color: #000;
 }
 
 .time-split {
@@ -1470,39 +1403,27 @@ video {
     font-size: 12px;
 }
 
-.time-split .col {
-    flex: 1;
-}
-
+.time-split .col { flex: 1; }
 .c-green { color: #4caf50; }
 .c-red { color: #e53935; }
 .c-grey { color: #888; }
+.val-num { font-size: 15px; font-weight: bold; margin: 4px 0; }
+.val-time { color: #555; font-size: 12px; }
 
-.val-num {
-    font-size: 15px;
-    font-weight: bold;
-    margin: 4px 0;
-}
-
-.val-time {
-    color: #555;
-    font-size: 11px;
-}
-
-/* --- SOLUTIONS & FULL SOLUTION SCREEN --- */
+/* --- STEP 5: SOLUTIONS LIST SCREEN CSS --- */
 #solutions-screen {
     background: #f5f5f5;
     min-height: 100vh;
     padding-bottom: 40px;
 }
 
-.sol-header, .fs-header {
+.sol-header {
     background: #fff;
-    padding: 14px 16px;
+    padding: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     border-bottom: 1px solid #eee;
     position: sticky;
@@ -1514,22 +1435,20 @@ video {
 .filters {
     display: flex;
     gap: 10px;
-    padding: 14px 16px;
+    padding: 16px;
     background: #fff;
     overflow-x: auto;
     border-bottom: 1px solid #eee;
 }
 
-.filters::-webkit-scrollbar {
-    display: none;
-}
+.filters::-webkit-scrollbar { display: none; }
 
 .flt-btn {
     padding: 8px 16px;
     border-radius: 8px;
     border: none;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     color: #555;
     background: #f0f0f0;
     white-space: nowrap;
@@ -1539,11 +1458,10 @@ video {
 .flt-active {
     background: #e8eaf6;
     color: #1a237e;
+    font-weight: bold;
 }
 
-.sol-container {
-    padding: 16px;
-}
+.sol-container { padding: 16px; }
 
 .sol-item {
     display: flex;
@@ -1557,7 +1475,6 @@ video {
     flex-direction: column;
     align-items: center;
     width: 40px;
-    flex-shrink: 0;
 }
 
 .sol-num {
@@ -1572,7 +1489,7 @@ video {
     font-size: 14px;
     position: relative;
     z-index: 2;
-    color: #222;
+    color: #111;
 }
 
 .sol-status-icon {
@@ -1586,13 +1503,13 @@ video {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 12px;
     border: 2px solid #fff;
 }
 
 .st-corr { background: #4caf50; }
 .st-wr { background: #e53935; }
-.st-una { background: #9e9e9e; }
+.st-una { background: #ccc; }
 
 .sol-line {
     width: 2px;
@@ -1608,50 +1525,65 @@ video {
     border-radius: 12px;
     padding: 16px;
     flex: 1;
-    min-width: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .sol-sec-badge {
     display: inline-block;
     background: #e8eaf6;
     color: #1a237e;
-    padding: 5px 12px;
+    padding: 6px 12px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .sol-q-txt {
     font-size: 15px;
     color: #333;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
+/* --- STEP 6: FULL SOLUTION SCREEN CSS --- */
 #full-sol-screen {
     background: #fff;
     min-height: 100vh;
     padding-bottom: 85px;
 }
 
+.fs-header {
+    background: #fff;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    color: #111;
+}
+
 .fs-q-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
+    padding: 16px;
     border-bottom: 1px solid #eee;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .fs-q-pill {
-    background: #e8eaf6;
-    color: #1a237e;
+    background: #e0e0e0;
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
     font-weight: bold;
+    color: #111;
 }
 
 .time-compare-badge {
@@ -1661,7 +1593,7 @@ video {
     background: #f5f5f5;
     padding: 6px 12px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: bold;
     border: 1px solid #ddd;
 }
@@ -1671,26 +1603,23 @@ video {
 .tc-alert { color: #d32f2f; }
 .tc-good { color: #2e7d32; }
 
-.fs-content {
-    padding: 16px;
-}
+.fs-content { padding: 16px; }
 
 .fs-q-txt {
     font-size: 16px;
     color: #111;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
 }
 
 .fs-opt {
-    border: 1.5px solid #cbd5e1;
-    border-radius: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     padding: 14px;
     margin-bottom: 12px;
     font-size: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
     color: #111;
 }
 
@@ -1707,27 +1636,25 @@ video {
 .fs-opt-perc {
     font-size: 12px;
     font-weight: bold;
-    color: #2e7d32;
-    background: #c8e6c9;
-    padding: 3px 8px;
-    border-radius: 6px;
-    flex-shrink: 0;
+    color: #4caf50;
+    margin-left: 8px;
+    white-space: nowrap;
 }
 
 .fs-exp-title {
     font-size: 16px;
     font-weight: bold;
     margin: 24px 0 10px 0;
-    color: #1a237e;
+    color: #000;
 }
 
 .fs-exp-text {
     font-size: 15px;
-    color: #222;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    color: #333;
+    background: #f9f9f9;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
 }
 
 .fs-bottom-bar {
