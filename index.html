@@ -3,22 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RWA Sky Pro Portal - Courses, Player & Live CBT Test Series</title>
+    <title>RWA Sky Pro Portal - Courses, Player & Live TCS CBT Test Series</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <!-- MathJax for Mathematical Equations in Tests -->
+    
+    <!-- MathJax Engine for Live Math Equations in CBT Tests -->
     <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
-            startup: {
-                pageReady: () => {
-                    return MathJax.startup.defaultPageReady();
-                }
-            }
-        };
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
+        startup: {
+          pageReady: () => {
+            return MathJax.startup.defaultPageReady();
+          }
+        }
+      };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
@@ -69,7 +69,7 @@
             <div class="text-center max-w-2xl mx-auto mb-8 mt-2">
                 <span class="px-3.5 py-1 rounded-full bg-white/80 text-sky-900 font-extrabold text-xs uppercase tracking-wider shadow-sm">RWA All-In-One Cloud Portal</span>
                 <h1 class="text-3xl sm:text-4xl font-black text-slate-900 mt-2">Select Your Study Zone</h1>
-                <p class="text-slate-700 text-sm font-medium mt-1">Paid Batches, Free Classes, Official Paid/Free Test Series aur Multi-Token Sync.</p>
+                <p class="text-slate-700 text-sm font-medium mt-1">Paid Batches, Free Classes, Official Paid/Free Test Series (TCS Pattern) aur Multi-Token Sync.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -101,7 +101,7 @@
                     <div class="hub-icon">📝</div>
                     <span class="hub-badge">WEEKLY MOCK TESTS</span>
                     <h2 class="text-2xl font-black mt-2">Free Test Series</h2>
-                    <p class="text-sm opacity-95 mt-1">UP Police, PET, RRB NTPC, SSC CGL aur sabhi Free Weekly Mock Tests.</p>
+                    <p class="text-sm opacity-95 mt-1">UP Police, PET, RRB NTPC, SSC GD/CGL aur sabhi Free Weekly Mock Tests.</p>
                     <div class="hub-btn mt-5">Attempt Free Tests ➔</div>
                 </div>
 
@@ -189,7 +189,6 @@
                             </div>
                         </div>
 
-                        <!-- Transparent Overlay Controls -->
                         <div id="playerControlsBar" class="controls">
                             <div class="seek-row">
                                 <input id="seek" class="seek" type="range" min="0" max="1000" value="0">
@@ -257,55 +256,45 @@
             </div>
         </section>
 
-        <!-- SLIDE 4: EXACT TCS PATTERN MOCK TEST ENGINE (FROM tcs.html) -->
+        <!-- SLIDE 4: EXACT TCS.HTML STEP-BY-STEP FULL PAGE CBT ENGINE -->
         <section id="slideTestAttempt" class="slide-page hidden-slide">
-            <div class="tcs-master-wrapper">
+            <div class="tcs-outer-shell">
                 <div class="app-container" id="tcsAppContainer">
 
-                    <!-- 1. TCS START & SUBJECT SELECTION SCREEN -->
+                    <!-- STEP 1: START & OPTIONAL SUBJECT SELECTION SCREEN -->
                     <div id="start-screen">
                         <div class="start-card">
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 14px;">
-                                <button onclick="exitCbtTest()" style="background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">⬅ Back</button>
-                                <h2 id="tcs-start-title" style="color: #1a237e; border:none; padding:0; margin:0; font-size:15px; flex:1; text-align:center;">(TCS Pattern) Mock Test</h2>
-                                <span id="tcs-mode-badge" style="background:#e8eaf6; color:#1a237e; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:6px;">CBT</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <button onclick="exitCbtTest()" style="background:#eee; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; font-size:12px; cursor:pointer; color:#333;">← Back</button>
+                                <span id="tcs-series-tag" style="font-size:11px; font-weight:bold; color:#1a237e; background:#e8eaf6; padding:4px 10px; border-radius:12px;">TCS CBT Pattern</span>
                             </div>
+                            <h2 id="tcs-test-title-heading" style="color: #1a237e; border-bottom: 1px solid #eee; padding-bottom: 12px;">(TCS Pattern) Mock Test</h2>
                             
-                            <!-- Dynamic Compulsory & Optional Subjects Container -->
                             <div id="subjects-selection-container"></div>
                             
                             <div class="stats-box">
                                 <div class="start-info"><span>Total Questions:</span> <span id="stat-qs">--</span></div>
                                 <div class="start-info"><span>Total Time:</span> <span id="stat-time">--</span></div>
                                 <div class="start-info"><span>Maximum Marks:</span> <span id="stat-marks">--</span></div>
-                                <div class="start-info"><span>Marking Scheme:</span> <span id="stat-marking">+2.0 / -0.50</span></div>
-                            </div>
-
-                            <!-- Optional Language Selector if Bilingual -->
-                            <div id="tcs-lang-box" class="hidden" style="margin-top:12px; background:#f0f4f8; padding:10px 14px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:bold; color:#102a43;">
-                                <span>🌐 Default Language:</span>
-                                <select id="tcs-default-lang" onchange="changeTcsLanguage(this.value)" style="padding:4px 10px; border-radius:6px; border:1px solid #cbd5e1; font-weight:bold; background:#fff; color:#1a237e; outline:none;">
-                                    <option value="hi">Hindi / Bilingual</option>
-                                    <option value="en">English</option>
-                                </select>
+                                <div class="start-info"><span>Marking Scheme:</span> <span id="stat-marking">+2.0 / -0.25</span></div>
+                                <div class="start-info"><span>Timing Mode:</span> <span id="stat-mode">Overall</span></div>
                             </div>
                             
-                            <button class="start-btn" id="tcs-start-btn" onclick="startTest()">Loading Test...</button>
+                            <button class="start-btn" id="tcs-main-start-btn" onclick="startTest()">Loading Test...</button>
                         </div>
                     </div>
 
-                    <!-- 2. TCS LIVE TEST SCREEN -->
+                    <!-- STEP 2: LIVE TCS TEST SCREEN -->
                     <div id="live-test-screen" class="hidden">
                         <div class="tcs-header">
-                            <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
                                 <div class="tcs-timer">
                                     <span id="timer-lbl" style="font-size:11px;background:#e53935;padding:2px 6px;border-radius:10px;margin-right:6px;font-weight:normal;">Time Left</span> 
                                     <span id="tcs-timer-display">00:15:00</span>
                                 </div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <button onclick="toggleTcsLang()" id="tcs-lang-toggle-btn" title="Switch Language" style="background:rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.35); border-radius:6px; padding:3px 8px; font-size:12px; font-weight:bold; cursor:pointer;">A/अ</button>
-                                <button onclick="toggleTcsFullscreen()" title="Fullscreen" style="background:rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.35); border-radius:6px; padding:3px 8px; font-size:12px; font-weight:bold; cursor:pointer;">⛶</button>
+                            <div style="display:flex; align-items:center; gap:14px;">
+                                <span onclick="toggleQuestionLang()" id="tcs-lang-btn" title="Switch Language" style="font-size:13px; font-weight:bold; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:6px; cursor:pointer; display:none;">A/अ</span>
                                 <div class="tcs-hamburger" onclick="toggleTcsPalette()">≡</div>
                             </div>
                         </div>
@@ -318,8 +307,8 @@
                                 <span id="tcs-q-time" style="color: #888;">00:00</span>
                             </div>
                             <div class="tcs-marks">
-                                <span class="tcs-m-pos">+2.00</span>
-                                <span class="tcs-m-neg">-0.25</span>
+                                <span class="tcs-m-pos" id="tcs-live-pos">+2.00</span>
+                                <span class="tcs-m-neg" id="tcs-live-neg">-0.25</span>
                                 <span style="color:#aaa;">⚠️</span>
                             </div>
                         </div>
@@ -332,7 +321,6 @@
                         <div class="tcs-footer">
                             <div class="tcs-arrows">
                                 <button class="tcs-arrow-btn" onclick="prevQuestion()">❮</button>
-                                <span id="tcs-sec-progress-lbl" style="font-size:12px; color:#666; font-weight:bold; align-self:center;">Section</span>
                                 <button class="tcs-arrow-btn" onclick="nextQuestion()">❯</button>
                             </div>
                             <div class="tcs-actions-row">
@@ -343,6 +331,7 @@
                             </div>
                         </div>
 
+                        <!-- TCS SLIDE-OUT QUESTION PALETTE DRAWER -->
                         <div class="tcs-drawer-overlay" id="tcs-palette">
                             <div class="tcs-drawer">
                                 <div class="tcs-dr-header">
@@ -364,23 +353,25 @@
                         </div>
                     </div>
 
-                    <!-- 3. TCS SUBMIT CONFIRMATION SCREEN -->
+                    <!-- STEP 3: SUBMIT SUMMARY CONFIRMATION SCREEN -->
                     <div id="submit-screen" class="hidden">
                         <div class="submit-header">Submit Test</div>
                         <div id="submit-summary-container"></div>
                         <div class="confirm-actions">
-                            <h3 style="margin-bottom:14px; font-weight:bold; color:#222;">Are you sure you want to submit?</h3>
-                            <button class="btn-yes" onclick="submitTest()">Yes, Submit</button>
-                            <button class="btn-no" onclick="closeSubmit()">No, Resume</button>
+                            <h3>Are you sure you want to submit?</h3>
+                            <div style="margin-top:14px;">
+                                <button class="btn-yes" onclick="submitTest()">Yes</button>
+                                <button class="btn-no" onclick="closeSubmit()">No</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 4. TCS RESULT & DETAILED ANALYSIS SCREEN -->
+                    <!-- STEP 4: DETAILED ANALYSIS & SCORECARD SCREEN -->
                     <div id="analysis-screen" class="hidden">
                         <div class="analysis-header">
-                            <button onclick="exitCbtTest()" style="background:transparent; border:1px solid rgba(255,255,255,0.4); color:#fff; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">⬅ Portal</button>
-                            <h1 style="font-size: 18px; margin: 0 auto; font-weight:bold;">Test Analysis</h1>
-                            <button onclick="reAttemptCbtTest()" style="background:#1a237e; border:none; color:#fff; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">🔄 Retry</button>
+                            <span style="cursor:pointer; font-size:20px; font-weight:bold;" onclick="exitCbtTest()">←</span>
+                            <h1 style="font-size: 18px; margin: 0 auto;">Analysis</h1>
+                            <span style="font-size:12px; cursor:pointer; background:#333; padding:4px 10px; border-radius:6px;" onclick="reAttemptTcsTest()">↻ Retry</span>
                         </div>
                         
                         <div id="dynamic-remark" class="remark-banner" style="display:none;"></div>
@@ -402,7 +393,7 @@
                         </div>
 
                         <div class="a-card">
-                            <h2 style="font-size: 18px; text-align: center; margin-bottom: 16px; font-weight:bold;">Comparison</h2>
+                            <h2 style="font-size: 18px; text-align: center; margin-bottom: 16px;">Comparison</h2>
                             <table class="comp-table">
                                 <thead><tr><th style="border:none;"></th><th class="col-you">You</th><th class="col-top">Topper</th><th class="col-avg">Avg</th></tr></thead>
                                 <tbody>
@@ -421,7 +412,7 @@
                                 <div class="legend-item"><div class="dot bg-red"></div>Incorrect</div>
                                 <div class="legend-item"><div class="dot bg-cyan"></div>Unattempted</div>
                             </div>
-                            <h3 style="text-align: center; margin-top: 30px; font-size: 18px; font-weight:bold;">Time Stats</h3>
+                            <h3 style="text-align: center; margin-top: 30px; font-size: 18px;">Time Stats</h3>
                             <div class="time-stats-box">
                                 <div class="ts-left" id="ts-box-corr">Correct</div>
                                 <div class="ts-right">
@@ -432,7 +423,7 @@
                         </div>
 
                         <div class="a-card" id="weak-areas-card" style="display:none; background:#ffebee; border: 1px solid #ffcdd2;">
-                            <h3 style="color:#c62828; margin-bottom:10px; text-align:center; font-weight:bold;">⚠️ Weak Subjects to Improve</h3>
+                            <h3 style="color:#c62828; margin-bottom:10px; text-align:center;">⚠️ Weak Subjects to Improve</h3>
                             <ul id="weak-areas-list" style="color:#b71c1c; font-size:14px; padding-left:20px; line-height:1.6;"></ul>
                         </div>
 
@@ -440,17 +431,17 @@
                         <div id="analysis-sections-container"></div>
                         
                         <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                            <button class="tcs-btn tcs-btn-submit" style="width: 100%; padding: 14px; font-size: 16px; background: #1a237e; border-color: #1a237e; border-radius: 8px;" onclick="openSolutions()">📊 View Full Solutions</button>
-                            <button class="tcs-btn" style="width: 100%; padding: 12px; font-size: 14px; background: #fff; border: 1px solid #ccc; border-radius: 8px;" onclick="exitCbtTest()">⬅ Back to Test List</button>
+                            <button class="tcs-btn tcs-btn-submit" style="width: 100%; padding: 14px; font-size: 16px; background: #1a237e; border-color: #1a237e; border-radius: 8px;" onclick="openSolutions()">📊 View Solutions & Full Analysis</button>
+                            <button class="tcs-btn" style="width: 100%; padding: 12px; font-size: 14px; border-radius: 8px;" onclick="exitCbtTest()">⬅ Back to Test Series</button>
                         </div>
                     </div>
 
-                    <!-- 5. TCS SOLUTIONS LIST SCREEN -->
+                    <!-- STEP 5: SOLUTIONS LIST SCREEN -->
                     <div id="solutions-screen" class="hidden">
                         <div class="sol-header">
                             <span style="cursor: pointer;" onclick="closeSolutions()">←</span>
                             <span>Solutions</span>
-                            <span style="font-size: 20px; cursor:pointer;" onclick="toggleTcsLang()">A/अ</span>
+                            <span style="font-size: 20px; cursor:pointer;" onclick="toggleQuestionLang()">A/अ</span>
                         </div>
                         <div class="filters">
                             <button class="flt-btn flt-active" onclick="filterSol('all', this)">All</button>
@@ -461,12 +452,12 @@
                         <div class="sol-container" id="sol-list-container"></div>
                     </div>
 
-                    <!-- 6. TCS FULL QUESTION SOLUTION SCREEN -->
+                    <!-- STEP 6: SINGLE QUESTION FULL SOLUTION SCREEN -->
                     <div id="full-sol-screen" class="hidden">
                         <div class="fs-header">
                             <span style="cursor: pointer;" onclick="closeFullSol()">←</span>
                             <span>Full Solution</span>
-                            <span style="font-size: 20px; cursor:pointer;" onclick="toggleTcsLang()">A/अ</span>
+                            <span style="font-size: 20px; cursor:pointer;" onclick="toggleQuestionLang()">A/अ</span>
                         </div>
                         <div class="fs-q-info">
                             <div class="fs-q-pill" id="fs-q-num">Question 1</div>
@@ -479,8 +470,8 @@
                             <div class="fs-exp-text" id="fs-exp-text">Explanation</div>
                         </div>
                         <div class="fs-bottom-bar" style="justify-content: space-between;">
-                            <button class="tcs-btn" style="background: #f1f5f9; border-color: #cbd5e1; color:#334155; border-radius: 24px; padding: 12px 24px; max-width:130px;" onclick="prevFullSol()">⬅ Prev</button>
-                            <button class="tcs-btn tcs-btn-submit" style="background: #1a237e; border-color: #1a237e; border-radius: 24px; padding: 12px 30px; max-width:150px;" onclick="nextFullSol()">Next ➔</button>
+                            <button class="tcs-btn" style="border-radius: 24px; padding: 12px 24px; max-width:130px;" onclick="prevFullSol()">❮ Prev</button>
+                            <button class="tcs-btn tcs-btn-submit" style="background: #1a237e; border-color: #1a237e; border-radius: 24px; padding: 12px 30px; max-width:140px;" onclick="nextFullSol()">Next ❯</button>
                         </div>
                     </div>
 
@@ -488,7 +479,7 @@
             </div>
         </section>
 
-        <!-- SLIDE 5: USER PERSONAL TOKEN MANAGER (ADMIN TOKENS STRICTLY HIDDEN) -->
+        <!-- SLIDE 5: USER PERSONAL TOKEN MANAGER -->
         <section id="slideTokens" class="slide-page hidden-slide">
             <div class="max-w-3xl mx-auto sky-card p-6">
                 <div class="flex justify-between items-center pb-4 mb-4 border-b border-sky-200">
@@ -544,7 +535,7 @@
 
     </main>
 
-    <!-- COMPULSORY LOGIN MODAL (2 OPTIONS: NUMBER+PASSWORD OR DIRECT TOKEN) -->
+    <!-- COMPULSORY LOGIN MODAL -->
     <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-sky-300 animate-slideInSmooth">
             <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
@@ -558,16 +549,13 @@
                 <button id="closeLoginModalBtn" onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-700 font-black text-lg hidden">✕</button>
             </div>
 
-            <!-- 2 Login Option Tabs -->
             <div class="grid grid-cols-2 gap-2 bg-sky-50 p-1.5 rounded-2xl border border-sky-200 mb-4">
                 <button id="tabBtnCreds" onclick="switchLoginMode('creds')" class="py-2 px-3 rounded-xl font-extrabold text-xs bg-blue-600 text-white shadow transition-all cursor-pointer border-0">📱 Number & Password</button>
                 <button id="tabBtnToken" onclick="switchLoginMode('token')" class="py-2 px-3 rounded-xl font-extrabold text-xs text-slate-700 bg-transparent hover:bg-sky-100 transition-all cursor-pointer border-0">🔑 Direct Token</button>
             </div>
 
-            <!-- Status / Error Alert Box -->
             <div id="loginStatusAlert" class="hidden mb-3 p-3 rounded-xl text-xs font-extrabold"></div>
 
-            <!-- OPTION 1: Phone/Email + Password -->
             <div id="loginBoxCreds" class="space-y-3.5">
                 <div>
                     <label class="text-xs font-extrabold text-slate-700">Phone Number / Email</label>
@@ -580,7 +568,6 @@
                 <button id="btnSubmitCreds" onclick="submitUserLogin('creds')" class="w-full btn-watch py-3 text-sm shadow-lg">Login with Password ➔</button>
             </div>
 
-            <!-- OPTION 2: Direct JWT Token -->
             <div id="loginBoxToken" class="space-y-3.5 hidden">
                 <div>
                     <label class="text-xs font-extrabold text-slate-700">Paste Direct JWT Authorization Token</label>
@@ -611,7 +598,7 @@
     </div>
 
     <script src="player.js"></script>
+    <script src="cbt.js"></script>
     <script src="app.js"></script>
-    <script src="tcs_test.js"></script>
 </body>
 </html>
