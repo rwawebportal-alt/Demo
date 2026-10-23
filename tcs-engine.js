@@ -269,7 +269,11 @@ const RWA_KNOWN_SECTION_IDS = {
     "211": "Computer Knowledge",
     "212": "English",
     "213": "Hindi",
-    "234": "Chemistry"
+    "215": "Basic Law/Constitution/General Knowledge",
+    "222": "Numerical & Mental Ability Test",
+    "234": "Chemistry",
+    "223": "Mental Aptitude/Intelligence/Reasoning"
+    
 };
 
 function stripHtmlText(html) {
