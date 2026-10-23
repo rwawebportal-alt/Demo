@@ -268,7 +268,8 @@ const RWA_KNOWN_SECTION_IDS = {
     "210": "English",
     "211": "Computer Knowledge",
     "212": "English",
-    "213": "Hindi"
+    "213": "Hindi",
+    "234": "Chemistry"
 };
 
 function stripHtmlText(html) {
